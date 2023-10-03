@@ -7,7 +7,9 @@ from sklearn.metrics import confusion_matrix,ConfusionMatrixDisplay,roc_curve,f1
 import seaborn as sns
 import matplotlib.pyplot as plt
 import modelim
-import evaluate
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+import os
+
 
 
 
@@ -53,6 +55,20 @@ class evaluate():
         plt.title("Normalized Confusion Matrix")
         plt.xlabel("Predicted label")
         plt.ylabel("True label")
+        plt.show()
+
+    def confusionv2(y_test1,prediction):
+        # Calculate the confusion matrix
+        confusion_mtx = confusion_matrix(y_test1, prediction)
+
+        # Calculate normalized confusion matrix
+        confusion_mtx_normalized = confusion_mtx.astype('float') / confusion_mtx.sum(axis=1)[:, np.newaxis]
+
+        # Plot the normalized confusion matrix
+        plt.figure(figsize=(8, 6))
+        disp = ConfusionMatrixDisplay(confusion_mtx_normalized, display_labels=["Class 0", "Class 1"])
+        disp.plot(cmap=plt.cm.Blues, values_format=".2f")
+        plt.title("Normalized Confusion Matrix")
         plt.show()
 
     def roc(y_test1,prediction):
@@ -171,3 +187,45 @@ class evaluate():
         plt.ylabel("accuracy")
         plt.legend()
         plt.show()
+
+
+    def augmentation_normal(label_path_normal,target_path):
+        datagen = ImageDataGenerator(rotation_range=15,
+                             samplewise_center=True,
+                             horizontal_flip=True,
+                             fill_mode="nearest")
+        
+        normal_images = os.listdir(label_path_normal)
+        k = 0
+        for i, image_name in enumerate(normal_images):
+            if (image_name.split(".")[1] == "png"):
+                os.chdir(label_path_normal)
+                img = cv2.imread(image_name)
+                img = img.reshape((1,)+img.shape)
+                print(img.shape)
+                k += 1
+                for batch in datagen.flow(img,batch_size=16,save_to_dir=target_path,save_format = "png"):
+                    print(k)
+                    break
+        print("comleted")
+
+    def augmentation_sick(label_path_sick,target_path):
+        datagen = ImageDataGenerator(rotation_range=15,
+                             samplewise_center=True,
+                             horizontal_flip=True,
+                             fill_mode="nearest")
+        
+        sick_images = os.listdir(label_path_sick)
+        k = 0
+        for i, image_name in enumerate(sick_images):
+            if (image_name.split(".")[1] == "png"):
+                os.chdir(label_path_sick)
+                img = cv2.imread(image_name)
+                img = img.reshape((1,)+img.shape)
+                print(img.shape)
+                k += 1
+                for batch in datagen.flow(img,batch_size=16,save_to_dir=target_path,save_format = "png"):
+                    print(k)
+                    break
+            
+        print("comleted")

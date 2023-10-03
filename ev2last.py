@@ -11,12 +11,15 @@ import matplotlib.pyplot as plt
 import os
 import modelim
 import evaluate
+from PIL import Image
 
 np.random.seed(1)
 tf.random.set_seed(2)
 
 label_path_normal = "/home/obayraktar/work/labeled/normal"
 label_path_sick = "/home/obayraktar/work/labeled/patient"
+target_path_normal = "/home/obayraktar/work/labeled/normal_aug"
+target_path_sick = "/home/obayraktar/work/labeled/patient_aug"
 main_path = "/home/obayraktar/work/labeled/"
 
 size = 224
@@ -44,6 +47,31 @@ for i, image_name in enumerate(patient_images):
         dataset.append(np.array(img))
         labelset.append(1)
         os.chdir(main_path)
+
+aug_patient_images = os.listdir(target_path_sick)
+for i, image_name in enumerate(aug_patient_images):
+    if (image_name.split(".")[1] == "png"):
+        os.chdir(target_path_sick)
+        img = cv2.imread(image_name)
+        #img = evaluate.evaluate.equalize(img)
+        #img = img.reshape(img.shape[1],img.shape[2],-1)
+        img = cv2.resize(img,(size,size))
+        dataset.append(np.array(img))
+        labelset.append(1)
+        os.chdir(main_path)
+
+aug_normal_images = os.listdir(target_path_normal)
+for i, image_name in enumerate(aug_normal_images):
+    if (image_name.split(".")[1] == "png"):
+        os.chdir(target_path_normal)
+        img = cv2.imread(image_name)
+        #img = evaluate.evaluate.equalize(img)
+        #img = img.reshape(img.shape[1],img.shape[2],-1)
+        img = cv2.resize(img,(size,size))
+        dataset.append(np.array(img))
+        labelset.append(0)
+        os.chdir(main_path)
+
 
 dataset = np.array(dataset)
 dummy_y = np_utils.to_categorical(labelset)
@@ -90,6 +118,9 @@ evaluate.evaluate.plot_acc_graph(acc,val_acc,epochs)
 #confusion matrix
 evaluate.evaluate.confusion(y_test1,prediction)
 
+#confusion matrix v2
+evaluate.evaluate.confusionv2(y_test1,prediction)
+
 #roc
 evaluate.evaluate.roc(y_test1,prediction)
 
@@ -101,3 +132,9 @@ evaluate.evaluate.cross_roc(5,size,opt,x_test=x_test,y_test=y_test)
 
 #k fold graphs
 evaluate.evaluate.corss_loss_acc(5,size,opt,x_train,y_train,x_test,y_test,epochs)
+
+#augmentation normal
+#evaluate.evaluate.augmentation_normal(label_path_normal,target_path_normal)
+
+#augmentation patient
+#evaluate.evaluate.augmentation_sick(label_path_sick,target_path_sick)
